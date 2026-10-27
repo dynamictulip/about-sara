@@ -1,0 +1,37 @@
+---
+import { Image } from "astro:assets";
+import { sortedEvents } from "../data/events";
+
+const list = sortedEvents(new Date());
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/events/*.{jpg,jpeg,png,webp}",
+  { eager: true },
+);
+const fmt = new Intl.DateTimeFormat("en-GB", { month: "short", year: "numeric", timeZone: "UTC" });
+const when = (d: string) => fmt.format(new Date(`${d}-01T00:00:00Z`));
+---
+<section id="events" aria-labelledby="events-h">
+  <h2 id="events-h"><span class="br2" aria-hidden="true">[</span>events<span class="br2" aria-hidden="true">]</span></h2>
+  <ul class="events">
+    {list.map((e) => (
+      <li>
+        <span class="date">{when(e.date)}</span>
+        <span class="name">
+          {e.url ? <a href={e.url}>{e.name}</a> : e.name}, {e.place}
+        </span>
+        <span class={e.upcoming ? "tag up" : "tag"}>{e.upcoming ? "upcoming" : "✔ delivered"}</span>
+        {e.talk ? <span class="talk-badge">{e.talk}</span> : null}
+        {e.photos?.length ? (
+          <span class="photos">
+            {e.photos.map((p) => {
+              const img = images[`/src/assets/events/${p.file}`];
+              return img ? (
+                <Image src={img.default} alt={p.alt} width={160} height={120} loading="lazy" />
+              ) : null;
+            })}
+          </span>
+        ) : null}
+      </li>
+    ))}
+  </ul>
+</section>

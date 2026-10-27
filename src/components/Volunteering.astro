@@ -1,0 +1,111 @@
+---
+import { volunteering } from "../data/volunteering";
+
+const colours = ["var(--green)", "var(--blue)", "var(--purple)", "var(--pink)", "var(--yellow)", "var(--orange)"];
+const thisYear = new Date().getFullYear();
+
+// Pack branches into the leftmost lane that is free for their whole span, like a git graph
+// reusing a column once an earlier branch has ended. Column 2 is the trunk; branch lanes start at column 3.
+const TRUNK = 2;
+const laneCol = (lane: number) => lane + 3;
+const laneSpans: [number, number][][] = [];
+const branches = volunteering.map((v, i) => {
+  const overlaps = (lane: number) => laneSpans[lane].some(([s, e]) => v.start <= e && s <= v.end);
+  let lane = 0;
+  while (laneSpans[lane] && overlaps(lane)) lane++;
+  (laneSpans[lane] ??= []).push([v.start, v.end]);
+  return {
+    ...v,
+    lane,
+    col: laneCol(lane),
+    last: v.end,
+    colour: colours[i % colours.length],
+    shape: `s${i % 3}`, // s0 circle, s1 square, s2 diamond: a cue that does not rely on colour
+  };
+});
+type Branch = (typeof branches)[number];
+const laneCount = laneSpans.length;
+
+const newest = Math.max(...branches.map((b) => b.last));
+const oldest = Math.min(...branches.map((b) => b.start));
+const years = Array.from({ length: newest - oldest + 1 }, (_, i) => newest - i); // newest first
+
+// Like a real git graph, every dot gets its own row: two branches with a dot in the same year are
+// stacked, never side by side. A year with no dot at all keeps one empty row so the gap shows.
+const rows: { year: number; b?: Branch }[] = [];
+const yearRows = new Map<number, [number, number]>(); // year -> first and last grid row
+for (const y of years) {
+  const first = rows.length + 1;
+  const active = branches.filter((b) => y >= b.start && y <= b.last);
+  if (active.length === 0) rows.push({ year: y });
+  else active.forEach((b) => rows.push({ year: y, b }));
+  yearRows.set(y, [first, rows.length]);
+}
+const rowOfDot = (b: Branch, y: number) => rows.findIndex((r) => r.year === y && r.b === b) + 1;
+const labelCol = laneCount + 3; // the wide column after the trunk and lanes
+
+// One cell per row from a branch's newest dot to its oldest: a dot where the branch has one, otherwise just its line.
+const cells = branches.flatMap((b) => {
+  const top = rowOfDot(b, b.last);
+  const bottom = rowOfDot(b, b.start);
+  return Array.from({ length: bottom - top + 1 }, (_, i) => {
+    const row = top + i;
+    const dotYear = rows[row - 1].b === b ? rows[row - 1].year : undefined;
+    return { b, row, first: row === top, last: row === bottom, dot: dotYear !== undefined, future: dotYear !== undefined && dotYear > thisYear };
+  });
+});
+
+// Every branch forks off the trunk in its first year. One that ended in the past merges back in its
+// last year; one that is current or upcoming stays open, like an unmerged branch head. A fork curves
+// down from the branch's first dot into the trunk; a merge curves up from the last dot.
+const links = branches.flatMap((b) => {
+  const out = [{ kind: "fork", row: rowOfDot(b, b.start), col: b.col, colour: b.colour }];
+  if (b.last < thisYear) out.push({ kind: "merge", row: rowOfDot(b, b.last), col: b.col, colour: b.colour });
+  return out;
+});
+
+// Cells taken by dots and connectors, so a label can tuck in beside its own branch.
+const taken = new Set<string>();
+cells.forEach((c) => c.dot && taken.add(`${c.row}:${c.b.col}`));
+links.forEach((l) => {
+  for (let c = TRUNK; c <= l.col; c++) taken.add(`${l.row}:${c}`);
+});
+
+// Each label sits on its branch's newest dot, starting as far left as the cells beside it allow.
+const labelled = branches.map((b) => {
+  const row = rowOfDot(b, b.last);
+  let col = labelCol;
+  while (col - 1 > b.col && !taken.has(`${row}:${col - 1}`)) col--;
+  return { ...b, labelRow: row, labelFrom: col, gap: col - (b.col + 1) }; // columns between the tip dot and the label
+});
+---
+<section id="volunteering" aria-labelledby="volunteering-h">
+  <h2 id="volunteering-h"><span class="br4" aria-hidden="true">&lt;</span>volunteering<span class="br4" aria-hidden="true">/&gt;</span></h2>
+  <div class="graph" style={`--lanes: ${laneCount + 1}`}>
+    {years.map((y) => (
+      <span class="yr" aria-hidden="true" style={`grid-row: ${yearRows.get(y)![0]} / ${yearRows.get(y)![1] + 1}; grid-column: 1`}>{y}</span>
+    ))}
+    <span class="trunk" aria-hidden="true" style={`grid-row: 1 / ${rows.length + 1}; grid-column: ${TRUNK}`}></span>
+    {links.map((l) => (
+      <>
+        <span class={`link ${l.kind}`} aria-hidden="true" style={`grid-row: ${l.row}; grid-column: ${TRUNK} / ${l.col + 1}; --c: ${l.colour}`}></span>
+        <span class={`junction ${l.kind}`} aria-hidden="true" style={`grid-row: ${l.row}; grid-column: ${TRUNK}`}></span>
+      </>
+    ))}
+    {cells.map((c) => (
+      <span
+        class={`cell ${c.b.shape}${c.first ? " first" : ""}${c.last ? " last" : ""}${c.dot ? "" : " nodot"}${c.future ? " future" : ""}`}
+        aria-hidden="true"
+        style={`grid-row: ${c.row}; grid-column: ${c.b.col}; --c: ${c.b.colour}`}
+      />
+    ))}
+    <ol role="list" class="entries">
+      {labelled.map((b) => (
+        <li role="listitem" style={`grid-row: ${b.labelRow}; grid-column: ${b.labelFrom} / -1; --c: ${b.colour}; --gap: ${b.gap}`}>
+          <strong>{b.role}</strong>{b.org ? <>, {b.url ? <a href={b.url}>{b.org}</a> : b.org}</> : null}{" "}
+          <span class="period">{b.period}</span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

@@ -1,0 +1,50 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 1 * *" # monthly rebuild so the "upcoming" badge stays current
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  ASTRO_TELEMETRY_DISABLED: "1"
+  # Where the site lives: https://dynamictulip.github.io/about-sara/ (public, so not kept as secrets or variables).
+  SITE_URL: https://dynamictulip.github.io
+  BASE_PATH: /about-sara/
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:a11y
+      - uses: withastro/action@v3
+        with:
+          node-version: 22
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

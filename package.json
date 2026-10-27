@@ -1,0 +1,22 @@
+{
+  "name": "super-sara-site",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "test:a11y": "playwright test"
+  },
+  "dependencies": {
+    "astro": "^7.4.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.64.1"
+  }
+}

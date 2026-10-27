@@ -1,0 +1,34 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+const favicon =
+  "data:image/svg+xml," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🦄</text></svg>`,
+  );
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href={favicon} />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="rainbow" aria-hidden="true"></div>
+    <div class="wrap">
+      <slot name="nav" />
+      <main id="main" tabindex="-1">
+        <slot />
+      </main>
+      <slot name="footer" />
+    </div>
+  </body>
+</html>

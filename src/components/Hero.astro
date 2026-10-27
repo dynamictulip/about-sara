@@ -1,0 +1,22 @@
+---
+import { Image } from "astro:assets";
+import { profile } from "../data/profile";
+import sara from "../assets/sara.jpg";
+const words = profile.tagline.split(" ");
+const colours = ["a", "b", "c", "d", "e"];
+---
+<header class="hero">
+  <div>
+    <p class="kicker">// speaker · tech lead · friendly human</p>
+    <h1>
+      {words.map((w, i) => (
+        <>
+          <span class={colours[i % colours.length]}>{w}{i === words.length - 1 ? "." : ""}</span>{" "}
+        </>
+      ))}
+    </h1>
+    <p class="lede">{profile.heroLine}</p>
+    <a class="btn" href={profile.links.linkedin}><span aria-hidden="true">🦄</span> Message me on LinkedIn</a>
+  </div>
+  <Image class="photo" src={sara} alt="Sara Gowen" width={400} height={400} loading="eager" />
+</header>

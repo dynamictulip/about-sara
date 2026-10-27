@@ -1,0 +1,10 @@
+---
+import { profile } from "../data/profile";
+---
+<section id="about" aria-labelledby="about-h">
+  <h2 id="about-h"><span class="br3" aria-hidden="true">{"{"}</span>about<span class="br3" aria-hidden="true">{"}"}</span></h2>
+  {profile.bio.map((p) => <p>{p}</p>)}
+  <ul class="topics" aria-label="Topics">
+    {profile.topics.map((t) => <li>{t}</li>)}
+  </ul>
+</section>
