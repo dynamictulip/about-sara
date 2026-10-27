@@ -5,9 +5,10 @@ export const profile = {
   heroLine: "I help teams ship software they can trust.",
   bio: [
     "Based in the South West of England, I'm a tech lead and a technical expert, but that's not the interesting bit.",
-    "The interesting bit is that I love a good gnarly problem. My favourite thing is digging into every corner of something complicated and decomplexifying it, so everyone understands it and we can actually solve the thing.",
-    "I also love coaching, mentoring and speaking, and I've done loads of it. People tell me I'm good at it.",
-    "I don't have a proper elevator pitch, but I'll happily chat for hours about all this and more, so please say hello!",
+    "The interesting bit is that I've seen some wild things in my time and they've taught me that keeping a close eye on quality is what lets a team move fast and still sleep at night. It's not just about having a test suite, it's about making sure we put the effort into the places that matter most and that we're communicating with each other and with our future selves.",
+    "I love sharing my experiences through coaching, mentoring and speaking, and I've done lots of it. People tell me I'm good at making hard concepts sound easy and I love the opportunities that it gives me to hear about others do stuff too.",
+    "That said, my truest love is digging into every nook and cranny of a big, complicated scroogle of a problem. There's something special about sitting down and decomplexifying a thing so everyone understands it and we can build something magnificent.",
+    "Anyways, drop me a message, or say hi if you see me around. I'd love to chat 😊"
   ],
   topics: ["Software quality", ".NET", "C#", "Docker", "Coaching", "Mentoring", "Speaking"],
   links: {
