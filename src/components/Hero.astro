@@ -8,13 +8,14 @@ const colours = ["a", "b", "c", "d", "e"];
 <header class="hero">
   <div>
     <p class="kicker">// speaker · tech lead · friendly human</p>
-    <h1>
+    <h1>{profile.name}</h1>
+    <p class="tagline">
       {words.map((w, i) => (
         <>
           <span class={colours[i % colours.length]}>{w}{i === words.length - 1 ? "." : ""}</span>{" "}
         </>
       ))}
-    </h1>
+    </p>
     <p class="lede">{profile.heroLine}</p>
     <a class="btn" href={profile.links.linkedin}><span aria-hidden="true">🦄</span> Message me on LinkedIn</a>
   </div>
