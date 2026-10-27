@@ -3,6 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request: # dependency updates are tested here before they merge
   workflow_dispatch:
   schedule:
     - cron: "0 3 1 * *" # monthly rebuild so the "upcoming" badge stays current
@@ -13,7 +14,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'pages' }}
   cancel-in-progress: true
 
 env:
@@ -40,6 +41,7 @@ jobs:
           node-version: 26
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:
