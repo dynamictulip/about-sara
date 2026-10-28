@@ -36,7 +36,7 @@ jobs:
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:a11y
-      - uses: withastro/action@v3
+      - uses: withastro/action@v6
         with:
           node-version: 26
 
